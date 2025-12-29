@@ -7,10 +7,9 @@ import React from 'react'
 
 const Header = () => {
     const pathname = usePathname();
-    ``
   return (
     <header>
-      <div className='main-cointainer inner'>
+      <div className='main-container inner'>
         <Link href="/">
            <Image src="logo.svg" alt="logo" width={132} height={32} /> 
         </Link>
