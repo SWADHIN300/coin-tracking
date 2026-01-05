@@ -49,9 +49,10 @@ export async function fetcher<T>(
       next: { revalidate },
     });
 
-    // 🚨 HANDLE RATE LIMIT SAFELY
+    //  HANDLE RATE LIMIT SAFELY
     if (response.status === 429) {
       console.warn('CoinGecko rate limited. Retrying...');
+      pendingRequests.delete(url);
       await new Promise((res) => setTimeout(res, 2000));
       return fetcher<T>(endpoint, params, revalidate);
     }

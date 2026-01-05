@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 
-const BASE_URL = process.env.COINGECKO_BASE_URL!;
+const BASE_URL = process.env.COINGECKO_BASE_URL;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
 export async function GET(request: Request) {
+    if (!BASE_URL) {
+    return NextResponse.json(
+      { error: 'Server configuration error' },
+      { status: 500 }
+    );
+  }
   const { searchParams } = new URL(request.url);
   const endpoint = searchParams.get('endpoint');
 

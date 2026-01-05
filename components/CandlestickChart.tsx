@@ -19,7 +19,8 @@ const CandlestickChart = ({
 
     const [period,setPeriod] = useState(initialPeriod);
     const [ohlcData,setOhlcData] = useState<OHLCData[]>(data ?? []);
-    const [isPending,startTransation] = useTransition();
+    const [isPending, startTransition] = useTransition();
+
 
     const chartCointainerref = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -49,7 +50,7 @@ const CandlestickChart = ({
     if(newPeriod === period) return ; 
     
     
-     startTransation(async () =>{
+      startTransition(async () =>{
        setPeriod(newPeriod);
        await fetchOHLData(newPeriod);
      });
@@ -93,7 +94,7 @@ const CandlestickChart = ({
    },[height,period]);
 
    useEffect(() => {
-  if (!candleSeries.current) return;
+   if (!candleSeries.current || !chartRef.current) return;
 
   const convertToSeconds = ohlcData.map((item) => [
     Math.floor(item[0] / 1000), // time in seconds
