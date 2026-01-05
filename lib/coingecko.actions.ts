@@ -2,72 +2,80 @@
 
 import qs from 'query-string';
 
+type QueryParams = Record<string, string | number | boolean | undefined | null>;
+
+type CoinGeckoErrorBody = {
+  error?: string;
+};
+
 const BASE_URL = process.env.COINGECKO_BASE_URL;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
 if (!BASE_URL) throw new Error('Could not get base url');
-if (!API_KEY) throw new Error('Could not get api key');
+
+//  simple in-memory dedupe (per request cycle)
+const pendingRequests = new Map<string, Promise<any>>();
+
 
 export async function fetcher<T>(
   endpoint: string,
   params?: QueryParams,
-  revalidate = 60,
+  revalidate = 120
 ): Promise<T> {
   const url = qs.stringifyUrl(
     {
-      url: `${BASE_URL}/${endpoint}`,
+      url: `${BASE_URL}${endpoint}`,
       query: params,
     },
-    { skipEmptyString: true, skipNull: true },
+    { skipEmptyString: true, skipNull: true }
   );
 
-  const response = await fetch(url, {
-    headers: {
-      'x-cg-pro-api-key': API_KEY,
-      'Content-Type': 'application/json',
-    } as Record<string, string>,
-    next: { revalidate },
-  });
-
-  if (!response.ok) {
-    const errorBody: CoinGeckoErrorBody = await response.json().catch(() => ({}));
-
-    throw new Error(`API Error: ${response.status}: ${errorBody.error || response.statusText} `);
+  // ✅ DEDUPE: avoid multiple calls to same endpoint
+  if (pendingRequests.has(url)) {
+    return pendingRequests.get(url)!;
   }
 
-  return response.json();
-}
-
-export async function getPools(
-  id: string,
-  network?: string | null,
-  contractAddress?: string | null,
-): Promise<PoolData> {
-  const fallback: PoolData = {
-    id: '',
-    address: '',
-    name: '',
-    network: '',
+  const headers: Record<string, string> = {
+    accept: 'application/json',
   };
 
-  if (network && contractAddress) {
-    try {
-      const poolData = await fetcher<{ data: PoolData[] }>(
-        `/onchain/networks/${network}/tokens/${contractAddress}/pools`,
-      );
-
-      return poolData.data?.[0] ?? fallback;
-    } catch (error) {
-      console.log(error);
-      return fallback;
-    }
+  if (API_KEY) {
+    headers['x-cg-pro-api-key'] = API_KEY;
   }
 
-  try {
-    const poolData = await fetcher<{ data: PoolData[] }>('/onchain/search/pools', { query: id });
+  const request = (async () => {
+    const response = await fetch(url, {
+      headers,
+      next: { revalidate },
+    });
 
-    return poolData.data?.[0] ?? fallback;
-  } catch {
-    return fallback;
+    //  HANDLE RATE LIMIT SAFELY
+    if (response.status === 429) {
+      console.warn('CoinGecko rate limited. Retrying...');
+      pendingRequests.delete(url);
+      await new Promise((res) => setTimeout(res, 2000));
+      return fetcher<T>(endpoint, params, revalidate);
+    }
+
+    if (!response.ok) {
+      const errorBody: CoinGeckoErrorBody =
+        await response.json().catch(() => ({}));
+
+      throw new Error(
+        `API Error: ${response.status}: ${
+          errorBody.error || response.statusText
+        }`
+      );
+    }
+
+    return response.json();
+  })();
+
+  pendingRequests.set(url, request);
+
+  try {
+    return await request;
+  } finally {
+    pendingRequests.delete(url);
   }
 }
