@@ -4,6 +4,7 @@ import { getCandlestickConfig, getChartConfig, PERIOD_BUTTONS, PERIOD_CONFIG } f
 import { fetcher } from "@/lib/coingecko.actions";
 import { convertOHLCData } from "@/lib/utils";
 import { CandlestickSeries, createChart, IChartApi, ISeriesApi } from "lightweight-charts";
+import { it } from "node:test";
 import { useEffect, useRef, useState, useTransition } from "react"
 
 const CandlestickChart = ({
@@ -15,7 +16,7 @@ const CandlestickChart = ({
     liveInterval = '1m',
     setLiveInterval,
 }: CandlestickChartProps) => {
-    const [loading,setLoading] = useState(false);
+
     const [period,setPeriod] = useState(initialPeriod);
     const [ohlcData,setOhlcData] = useState<OHLCData[]>(data ?? []);
     const [isPending,startTransation] = useTransition();
@@ -67,6 +68,10 @@ const CandlestickChart = ({
     });
     const series = chart.addSeries(CandlestickSeries,getCandlestickConfig());
 
+    const convertedToSeconds = ohlcData.map(
+        (item) => [Math.floor(item[0]/1000),item[1],item[2],item[3],item[4]] as OHLCData
+    );
+
     series.setData(convertOHLCData(ohlcData));
     chart.timeScale().fitContent();
 
@@ -85,7 +90,7 @@ const CandlestickChart = ({
         chartRef.current = null;
         candleSeries.current = null;
      }
-   },[height]);
+   },[height,period]);
 
    useEffect(() => {
   if (!candleSeries.current) return;
@@ -114,7 +119,7 @@ const CandlestickChart = ({
             <span className="text-sm mx-2 font-medium text-purple-100/50">Period:</span>
             {PERIOD_BUTTONS.map(({ value,label })=>(
                  <button key={value} className={period === value ? 'config-button-active' : 'config-button'}  onClick={() => handlePeriodChange(value)}
-            disabled={loading}>
+            disabled={isPending}>
                 {label}
             </button>
             ))}
