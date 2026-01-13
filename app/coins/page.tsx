@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { cn, formatPercentage, formatCurrency } from '@/lib/utils';
 import DataTable from '@/components/DataTable';
 import CoinsPagination from '@/components/CoinPagination';
-import { Sparkle } from 'lucide-react';
+
 
 
 
 const CoinsPage = async ({ searchParams }: NextPageProps) => {
-  const { page } = await searchParams;
+  const { page } = searchParams || {};
 
   const currentPage = Number(page) || 1;
   const perPage = 10;
@@ -29,10 +29,9 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
       header: 'Rank',
       cellClassName: 'rank-cell',
       cell: (coin) => (
-        <>
+        <Link href={`/coins/${coin.id}`} aria-label="View coin">
           #{coin.market_cap_rank}
-          <Link href={`/coins/${coin.id}`} aria-label="View coin" />
-        </>
+        </Link>
       ),
     },
     {
@@ -41,12 +40,12 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
   cell: (coin) => (
     <div className="token-info">
       <Image
-        src={coin.image}
-        alt={coin.name}
-        width={36}
-        height={36}
-        loading="lazy"
-        sizes="36px"
+          src={coin.image}
+          alt={coin.name}
+          width={36}
+          height={36}
+          loading="eager"
+          sizes="36px"
       />
       <p>
         {coin.name} ({coin.symbol.toUpperCase()})
@@ -84,6 +83,17 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
       cell: (coin) => formatCurrency(coin.market_cap),
     },
   ];
+
+  if (!coinsData || coinsData.length === 0) {
+    return (
+      <main id="coins-page">
+        <div className="content">
+          <h4>All Coins</h4>
+          <p>Unable to load coins data. Please try again later.</p>
+        </div>
+      </main>
+    );
+  }
 
   const hasMorePages = coinsData.length === perPage;
 

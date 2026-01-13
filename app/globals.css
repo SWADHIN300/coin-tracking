@@ -738,7 +738,11 @@
       }
 
       .select-trigger {
-        @apply w-fit! border-none! cursor-pointer! h-12! bg-dark-400! hover:bg-dark-400! focus-visible:ring-0!;
+        @apply w-fit! border-none! cursor-pointer! h-12! focus-visible:ring-0!;
+        background-color: #22223b !important;
+        &:hover {
+          background-color: #22223b !important;
+        }
 
         .select-value {
           @apply font-semibold! text-xs! text-purple-100!;
@@ -746,7 +750,8 @@
       }
 
       .select-content[data-converter] {
-        @apply bg-dark-400 max-h-125;
+        @apply max-h-125;
+        background-color: #22223b !important;
 
         .select-item {
           @apply cursor-pointer hover:bg-dark-500!;
