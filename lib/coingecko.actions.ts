@@ -54,9 +54,9 @@ export async function fetcher<T>(
   });
 
   // Deduplicate identical requests
-  if (pendingRequests.has(url)) {
-    return pendingRequests.get(url)!;
-  }
+    if (pendingRequests.has(url)) {
+      return pendingRequests.get(url)! as Promise<T>;
+    }
 
   const request = (async () => {
     try {
