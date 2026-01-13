@@ -2,19 +2,13 @@
 
 import qs from 'query-string';
 
-type QueryParams = Record<string, string | number | boolean | undefined | null>;
+type QueryParams = Record<string, string | number | boolean | undefined>;
 
-type CoinGeckoErrorBody = {
-  error?: string;
-};
-
-const BASE_URL = process.env.COINGECKO_BASE_URL;
+const BASE_URL = process.env.COINGECKO_BASE_URL!;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
-if (!BASE_URL) throw new Error('Could not get base url');
-
-// In-memory dedupe (per request cycle)  
-const pendingRequests = new Map<string, Promise<unknown>>();
+// Prevent duplicate in-flight requests
+const pendingRequests = new Map<string, Promise<any>>();
 
 export async function fetcher<T>(
   endpoint: string,
@@ -22,7 +16,7 @@ export async function fetcher<T>(
   revalidate = 120,
   retry = 0
 ): Promise<T> {
-  // ✅ Normalize params for CoinGecko
+  //  Normalize params (CoinGecko safe)
   const normalizedParams: Record<string, string | number> = {};
 
   if (params) {
@@ -33,66 +27,95 @@ export async function fetcher<T>(
     }
   }
 
-  const url = qs.stringifyUrl(
-    {
-      url: `${BASE_URL}${endpoint}`,
-      query: normalizedParams,
-    },
-    { skipEmptyString: true }
-  );
+  //  Build URL
+  const url = qs.stringifyUrl({
+    url: `${BASE_URL}${endpoint}`,
+    query: normalizedParams,
+  });
 
-if (pendingRequests.has(url)) {
-  return pendingRequests.get(url)! as Promise<T>;
-}
-
-  const headers: Record<string, string> = {
-    accept: 'application/json',
-  };
-
-  // ✅ Attach key ONLY for Pro API
-  if (API_KEY && BASE_URL!.includes('pro-api.coingecko.com')) {
-    headers['x-cg-pro-api-key'] = API_KEY;
+  // Deduplicate identical requests
+  if (pendingRequests.has(url)) {
+    return pendingRequests.get(url)!;
   }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
 
   const request = (async () => {
     try {
-      const response = await fetch(url, {
-        headers,
-        next: { revalidate },
-        signal: controller.signal,
-      });
+      const headers: HeadersInit = {
+        accept: 'application/json',
+      };
 
-      if (response.status === 429 && retry < 2) {
-        pendingRequests.delete(url);
-        await new Promise((res) => setTimeout(res, 1500));
-        return fetcher<T>(endpoint, params, revalidate, retry + 1);
+      if (API_KEY && BASE_URL.includes('pro-api.coingecko.com')) {
+        headers['x-cg-pro-api-key'] = API_KEY;
       }
 
-      if (!response.ok) {
-        const errorBody: CoinGeckoErrorBody =
-          await response.json().catch(() => ({}));
+      const response = await fetch(url, {
+        headers,
+        next: { revalidate }, //  ISR caching
+      });
 
+      //  Handle rate limit safely (NO crash)
+      if (response.status === 429) {
+        console.warn('CoinGecko rate limited (429)');
+        return null as T;
+      }
+
+      //  Handle other API errors
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
         throw new Error(
-          `API Error: ${response.status}: ${
-            errorBody.error || response.statusText
+          `API Error ${response.status}: ${
+            errorBody?.error || response.statusText
           }`
         );
       }
 
-      return response.json();
+      return response.json() as Promise<T>;
+    } catch (error) {
+      // 6️ Optional retry (1 retry max)
+      if (retry < 1) {
+        await new Promise(res => setTimeout(res, 1000));
+        return fetcher<T>(endpoint, params, revalidate, retry + 1);
+      }
+
+      console.error('Fetcher failed:', error);
+      return null as T;
     } finally {
-      clearTimeout(timeout);
+      pendingRequests.delete(url);
     }
   })();
 
   pendingRequests.set(url, request);
+  return request;
+}
+
+export async function getPools(
+  id: string,
+  network?: string | null,
+  contractAddress?: string | null
+): Promise<PoolData> {
+  const fallback: PoolData = {
+    id: "",
+    address: "",
+    name: "",
+    network: "",
+  };
+
+  if (network && contractAddress) {
+    const poolData = await fetcher<{ data: PoolData[] }>(
+      `/onchain/networks/${network}/tokens/${contractAddress}/pools`
+    );
+
+    return poolData?.data?.[0] ?? fallback;
+  }
 
   try {
-    return await request;
-  } finally {
-    pendingRequests.delete(url);
+    const poolData = await fetcher<{ data: PoolData[] }>(
+      "/onchain/search/pools",
+      { query: id }
+    );
+
+    return poolData.data?.[0] ?? fallback;
+  } catch {
+    return fallback;
   }
 }
