@@ -165,7 +165,7 @@ const CandlestickChart = ({
         )}
       </div>
 
-      <div ref={chartContainerRef} className="chart" style={{ height }} />
+      <div ref={chartContainerRef} className="chart" />
     </div>
   );
 };

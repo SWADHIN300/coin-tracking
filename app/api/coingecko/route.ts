@@ -25,7 +25,7 @@ export async function GET(request: Request) {
       accept: 'application/json',
       ...(API_KEY ? { 'x-cg-pro-api-key': API_KEY } : {}),
     },
-    next: { revalidate: 120 }, // ✅ HARD CACHE
+    next: { revalidate: 120 }, //  HARD CACHE
   });
 
   if (!res.ok) {

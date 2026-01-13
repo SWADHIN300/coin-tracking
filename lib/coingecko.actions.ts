@@ -8,7 +8,27 @@ const BASE_URL = process.env.COINGECKO_BASE_URL!;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
 // Prevent duplicate in-flight requests
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
+// Add searchCoins function for SearchModal
+export async function searchCoins(query: string): Promise<SearchCoin[]> {
+  if (!query) return [];
+  // Example endpoint, adjust as needed for your API
+  const data = await fetcher<any>(`/search?query=${encodeURIComponent(query)}`);
+  // Map/transform as needed to SearchCoin[]
+  if (!data || !data.coins) return [];
+  return data.coins.map((coin: any) => ({
+    id: coin.id,
+    name: coin.name,
+    symbol: coin.symbol,
+    market_cap_rank: coin.market_cap_rank ?? null,
+    thumb: coin.thumb,
+    large: coin.large,
+    data: {
+      price: coin.price,
+      price_change_percentage_24h: coin.price_change_percentage_24h ?? 0,
+    },
+  }));
+}
 
 export async function fetcher<T>(
   endpoint: string,

@@ -2,7 +2,7 @@ import Categories from '@/components/home/Categories';
 import CoinOverview from '@/components/home/CoinOverview';
 import { CategoriesFallback, CoinOverviewFallback, TrendingCoinsFallback } from '@/components/home/fallback';
 import TrendingCoins from '@/components/home/TrendingCoins';
-import React, { Suspense } from 'react';
+import  { Suspense } from 'react';
 
 
 const page = async () => {
