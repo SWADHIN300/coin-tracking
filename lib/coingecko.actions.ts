@@ -105,7 +105,7 @@ export async function getPools(
       `/onchain/networks/${network}/tokens/${contractAddress}/pools`
     );
 
-    return poolData.data?.[0] ?? fallback;
+    return poolData?.data?.[0] ?? fallback;
   }
 
   try {

@@ -6,7 +6,9 @@ import { formatCurrency } from '@/lib/utils';
 import LiveDataWrapper from '@/components/LiveDataWrapper';
 import Converter from '@/components/Converter';
 
-
+type NextPageProps = {
+  params: Promise<{ id: string }>;
+};
 
 const Page = async ({ params }: NextPageProps) => {
   const { id } = await params;

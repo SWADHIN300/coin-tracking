@@ -8,10 +8,8 @@ import DataTable from '@/components/DataTable';
 import CoinsPagination from '@/components/CoinPagination';
 
 
-
-
 const CoinsPage = async ({ searchParams }: NextPageProps) => {
-  const { page } = searchParams || {};
+ const { page } = (await searchParams) || {};
 
   const currentPage = Number(page) || 1;
   const perPage = 10;

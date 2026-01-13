@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { Badge } from './ui/badge';
 
+
 const CoinHeader = ({
   livePriceChangePercentage24h,
   priceChangePercentage30d,
