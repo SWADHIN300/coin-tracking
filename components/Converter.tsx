@@ -8,9 +8,7 @@ import { formatCurrency } from '@/lib/utils';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -42,7 +40,6 @@ const Converter = ({ symbol, icon, priceList }: ConverterProps) => {
 
         <div className="divider">
           <div className="line" />
-
           <Image src="/convertor.svg" alt="converter" width={32} height={32} className="icon" />
         </div>
 
@@ -51,9 +48,7 @@ const Converter = ({ symbol, icon, priceList }: ConverterProps) => {
 
           <Select value={currency} onValueChange={setCurrency}>
             <SelectTrigger className="select-trigger" value={currency}>
-              <SelectValue placeholder="Select" className="select-value">
-                {currency.toUpperCase()}
-              </SelectValue>
+              <SelectValue placeholder={currency.toUpperCase()} className="select-value" />
             </SelectTrigger>
             <SelectContent className="select-content" data-converter>
               {Object.keys(priceList).map((currencyCode) => (
