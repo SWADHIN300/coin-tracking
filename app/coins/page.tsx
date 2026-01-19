@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { cn, formatPercentage, formatCurrency } from '@/lib/utils';
 import DataTable from '@/components/DataTable';
 import CoinsPagination from '@/components/CoinPagination';
+import RecentTradesWidget from '@/components/RecentTradesWidget';
 
 
 const CoinsPage = async ({ searchParams }: NextPageProps) => {
@@ -114,6 +115,8 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
           totalPages={estimatedTotalPages}
           hasMorePages={hasMorePages}
         />
+
+        <RecentTradesWidget />
       </div>
     </main>
   );

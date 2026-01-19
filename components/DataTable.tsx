@@ -37,26 +37,34 @@ const DataTable = <T,>({
           ))}
         </TableRow>
       </TableHeader>
-      
+
       <TableBody>
-        {data.map((row, rowIndex) => (
-          <TableRow
-            key={rowKey(row, rowIndex)}
-            className={cn(
-              'overflow-hidden rounded-lg border-b border-purple-100/5 hover:bg-dark-400/30! relative',
-              bodyRowClassName,
-            )}
-          >
-            {columns.map((column, columnIndex) => (
-              <TableCell
-                key={columnIndex}
-                className={cn('py-4 first:pl-5 last:pr-5', bodyCellClassName, column.cellClassName)}
-              >
-                {column.cell(row, rowIndex)}
-              </TableCell>
-            ))}
+        {data && data.length > 0 ? (
+          data.map((row, rowIndex) => (
+            <TableRow
+              key={rowKey(row, rowIndex)}
+              className={cn(
+                'overflow-hidden rounded-lg border-b border-purple-100/5 hover:bg-dark-400/30! relative',
+                bodyRowClassName,
+              )}
+            >
+              {columns.map((column, columnIndex) => (
+                <TableCell
+                  key={columnIndex}
+                  className={cn('py-4 first:pl-5 last:pr-5', bodyCellClassName, column.cellClassName)}
+                >
+                  {column.cell(row, rowIndex)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={columns.length} className="text-center py-8 text-purple-100/50">
+              No data available
+            </TableCell>
           </TableRow>
-        ))}
+        )}
       </TableBody>
     </Table>
   );

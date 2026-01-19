@@ -7,10 +7,11 @@ import { formatCurrency, timeAgo } from '@/lib/utils';
 import { useState } from 'react';
 import CoinHeader from '@/components/CoinHeader';
 import { useCoinGeckoWebSocket } from '@/hooks/useCoingeckoWebSocket';
+import StatusIndicators from '@/components/StatusIndicators';
 
 const LiveDataWrapper = ({ children, coinId, poolId, coin, coinOHLCData }: LiveDataProps) => {
   const [liveInterval, setLiveInterval] = useState<'1s' | '1m'>('1s');
-  const { trades, ohlcv, price } = useCoinGeckoWebSocket({ coinId, poolId, liveInterval });
+  const { trades, ohlcv, price, isConnected } = useCoinGeckoWebSocket({ coinId, poolId, liveInterval });
 
   const tradeColumns: DataTableColumn<Trade>[] = [
     {
@@ -46,6 +47,13 @@ const LiveDataWrapper = ({ children, coinId, poolId, coin, coinOHLCData }: LiveD
 
   return (
     <section id="live-data-wrapper">
+      <StatusIndicators
+        isConnected={isConnected}
+        showLiveIndicator={true}
+        lastUpdated={trades && trades.length > 0 && trades[0]?.timestamp ? trades[0].timestamp : null}
+        className="mb-4 fade-in"
+      />
+
       <CoinHeader
         name={coin.name}
         image={coin.image.large}
@@ -76,7 +84,7 @@ const LiveDataWrapper = ({ children, coinId, poolId, coin, coinOHLCData }: LiveD
 
       {tradeColumns && (
         <div className="trades">
-          <h4>Recent Trades..... Comming soon</h4>
+          <h4>Recent Trades</h4>
 
           <DataTable
             columns={tradeColumns}
