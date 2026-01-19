@@ -9,7 +9,7 @@ import CoinsPagination from '@/components/CoinPagination';
 
 
 const CoinsPage = async ({ searchParams }: NextPageProps) => {
- const { page } = (await searchParams) || {};
+  const { page } = (await searchParams) || {};
 
   const currentPage = Number(page) || 1;
   const perPage = 10;
@@ -27,30 +27,30 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
       header: 'Rank',
       cellClassName: 'rank-cell',
       cell: (coin) => (
-        <Link href={`/coins/${coin.id}`} aria-label="View coin">
+        <Link href={`/coins/${coin.id}`} prefetch={true} aria-label="View coin">
           #{coin.market_cap_rank}
         </Link>
       ),
     },
     {
-  header: 'Token',
-  cellClassName: 'token-cell',
-  cell: (coin) => (
-    <div className="token-info">
-      <Image
-          src={coin.image}
-          alt={coin.name}
-          width={36}
-          height={36}
-          loading="eager"
-          sizes="36px"
-      />
-      <p>
-        {coin.name} ({coin.symbol.toUpperCase()})
-      </p>
-    </div>
-  ),
-},
+      header: 'Token',
+      cellClassName: 'token-cell',
+      cell: (coin) => (
+        <div className="token-info">
+          <Image
+            src={coin.image}
+            alt={coin.name}
+            width={36}
+            height={36}
+            loading="eager"
+            sizes="36px"
+          />
+          <p>
+            {coin.name} ({coin.symbol.toUpperCase()})
+          </p>
+        </div>
+      ),
+    },
     {
       header: 'Price',
       cellClassName: 'price-cell',
