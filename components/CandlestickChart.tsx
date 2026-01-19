@@ -32,9 +32,21 @@ const CandlestickChart = ({
   const [ohlcData, setOhlcData] = useState<OHLCData[]>(data ?? []);
   const [isPending, startTransition] = useTransition();
 
+  // Sync data prop with state when it changes (e.g., navigating to a new coin)
+  useEffect(() => {
+    if (data) {
+      setOhlcData(data);
+    }
+  }, [data]);
+
+  // Reset period to initial when coinId changes (navigating to a new coin)
+  useEffect(() => {
+    setPeriod(initialPeriod);
+  }, [coinId, initialPeriod]);
+
   const fetchOHLCData = async (selectedPeriod: Period) => {
     try {
-     const { days } = PERIOD_CONFIG[selectedPeriod];
+      const { days } = PERIOD_CONFIG[selectedPeriod];
 
       const newData = await fetcher<OHLCData[]>(`/coins/${coinId}/ohlc`, {
         vs_currency: 'usd',
@@ -91,7 +103,7 @@ const CandlestickChart = ({
       chartRef.current = null;
       candleSeriesRef.current = null;
     };
-  }, [height, period]);
+  }, [height, period, coinId]); // Added coinId to force chart recreation on coin change
 
   useEffect(() => {
     if (!candleSeriesRef.current) return;
@@ -147,22 +159,6 @@ const CandlestickChart = ({
             </button>
           ))}
         </div>
-
-        {liveInterval && (
-          <div className="button-group">
-            <span className="text-sm mx-2 font-medium text-purple-100/50">Update Frequency:</span>
-            {LIVE_INTERVAL_BUTTONS.map(({ value, label }) => (
-              <button
-                key={value}
-                className={liveInterval === value ? 'config-button-active' : 'config-button'}
-                onClick={() => setLiveInterval && setLiveInterval(value)}
-                disabled={isPending}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       <div ref={chartContainerRef} className="chart" />
