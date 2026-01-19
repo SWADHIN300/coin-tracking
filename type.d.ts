@@ -316,3 +316,19 @@ interface PoolData {
   name: string;
   network: string;
 }
+
+interface GlobalData {
+  data: {
+    total_market_cap: {
+      usd: number;
+    };
+    total_volume: {
+      usd: number;
+    };
+    market_cap_percentage: {
+      btc: number;
+    };
+    market_cap_change_percentage_24h_usd: number;
+    active_cryptocurrencies: number;
+  };
+}

@@ -28,15 +28,15 @@ const CoinOverview = async () => {
   if (!coin) return <CoinOverviewFallback />;
 
   return (
-    <div id="coin-overview">
+    <div id="coin-overview" className="glass elevation-2 scale-hover-sm transition-all duration-300">
       <CandlestickChart data={coinOHLCData} coinId='bitcoin' liveInterval='1m'>
-        <div className="header pt-2">
-          <Image src={coin.image.large} alt={coin.name} width={56} height={56} />
+        <div className="header pt-2 fade-in-down">
+          <Image src={coin.image.large} alt={coin.name} width={56} height={56} className="elevation-1 rounded-full" />
           <div className="info">
-            <p>
+            <p className="text-purple-100">
               {coin.name} / {(coin.symbol || '').toUpperCase()}
             </p>
-            <h1>{formatCurrency(coin.market_data.current_price.usd)}</h1>
+            <h1 className="gradient-text-success">{formatCurrency(coin.market_data.current_price.usd)}</h1>
           </div>
         </div>
       </CandlestickChart>
