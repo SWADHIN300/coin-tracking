@@ -8,6 +8,28 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 const Categories = async () => {
 
   const categories = await fetcher<Category[]>('/coins/categories');
+  let categories;
+
+  try {
+    categories = await fetcher<Category[]>('/coins/categories');
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return (
+      <div id="categories" className='custom-scrollbar'>
+        <h4>Top Categories</h4>
+        <p className="text-purple-100/70 text-sm mt-4">Unable to load categories data. Please try again later.</p>
+      </div>
+    );
+  }
+
+  if (!categories || categories.length === 0) {
+    return (
+      <div id="categories" className='custom-scrollbar'>
+        <h4>Top Categories</h4>
+        <p className="text-purple-100/70 text-sm mt-4">No categories available at this time.</p>
+      </div>
+    );
+  }
 
   const columns: DataTableColumn<Category>[] = [
     {
@@ -57,6 +79,7 @@ const Categories = async () => {
 
       <DataTable columns={columns}
         data={(categories ?? []).slice(0, 10)}
+        data={categories?.slice(0, 10) ?? []}
         rowKey={(_, index) => index}
         tableClassName='mt-3' />
 

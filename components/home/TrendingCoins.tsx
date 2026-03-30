@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import DataTable from '@/components/DataTable';
+import TrendingBadge from '@/components/TrendingBadge';
 import { TrendingCoinsFallback } from './fallback';
 
 const TrendingCoins = async () => {
@@ -23,13 +24,16 @@ const TrendingCoins = async () => {
     {
       header: 'Name',
       cellClassName: 'name-cell',
-      cell: (coin) => {
+      cell: (coin, index) => {
         const item = coin.item;
 
         return (
-          <Link href={`/coins/${item.id}`}>
-            <Image src={item.large} alt={item.name} width={36} height={36} />
-            <p>{item.name}</p>
+          <Link href={`/coins/${item.id}`} className="flex items-center gap-2">
+            <Image src={item.large} alt={item.name} width={36} height={36} className="rounded-full" />
+            <div className="flex flex-col">
+              <p className="font-semibold">{item.name}</p>
+              <TrendingBadge isTrending={index < 3} rank={item.market_cap_rank} />
+            </div>
           </Link>
         );
       },
@@ -68,6 +72,7 @@ const TrendingCoins = async () => {
 
       <DataTable
         data={trendingCoins.coins.slice(0, 6)}
+        data={trendingCoins?.coins?.slice(0, 6) ?? []}
         columns={columns}
         rowKey={(coin) => coin.item.id}
         tableClassName="trending-coins-table"

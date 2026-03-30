@@ -137,6 +137,12 @@ const LiveDataWrapper = ({ coinId, tvSymbol, coin, section = 'full' }: LiveDataP
         return (b.timestamp ?? 0) - (a.timestamp ?? 0);
     }
   });
+import { useCoinGeckoWebSocket } from '@/hooks/useCoingeckoWebSocket';
+import StatusIndicators from '@/components/StatusIndicators';
+
+const LiveDataWrapper = ({ children, coinId, poolId, coin, coinOHLCData }: LiveDataProps) => {
+  const [liveInterval, setLiveInterval] = useState<'1s' | '1m'>('1s');
+  const { trades, ohlcv, price, isConnected } = useCoinGeckoWebSocket({ coinId, poolId, liveInterval });
 
   const displayTrades = sortedTrades.slice(0, DISPLAY_COUNT);
 
@@ -318,6 +324,44 @@ const LiveDataWrapper = ({ coinId, tvSymbol, coin, section = 'full' }: LiveDataP
               </select>
             </div>
           </div>
+      <StatusIndicators
+        isConnected={isConnected}
+        showLiveIndicator={true}
+        lastUpdated={trades && trades.length > 0 && trades[0]?.timestamp ? trades[0].timestamp : null}
+        className="mb-4 fade-in"
+      />
+
+      <CoinHeader
+        name={coin.name}
+        image={coin.image.large}
+        livePrice={price?.usd ?? coin.market_data.current_price.usd}
+        livePriceChangePercentage24h={
+          price?.change24h ?? coin.market_data.price_change_percentage_24h_in_currency.usd
+        }
+        priceChangePercentage30d={coin.market_data.price_change_percentage_30d_in_currency.usd}
+        priceChange24h={coin.market_data.price_change_24h_in_currency.usd}
+      />
+      <Separator className="divider" />
+
+      <div className="trend">
+        <CandlestickChart
+          coinId={coinId}
+          data={coinOHLCData}
+          liveOhlcv={ohlcv}
+          mode="live"
+          initialPeriod="daily"
+          liveInterval={liveInterval}
+          setLiveInterval={setLiveInterval}
+        >
+          <h4>Trend Overview</h4>
+        </CandlestickChart>
+      </div>
+
+      <Separator className="divider" />
+
+      {tradeColumns && (
+        <div className="trades">
+          <h4>Recent Trades</h4>
 
           <DataTable
             columns={tradeColumns}

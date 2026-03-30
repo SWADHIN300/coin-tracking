@@ -10,6 +10,7 @@ import TradingViewChart from '@/components/TradingViewChart';
 import TradingViewTicker from '@/components/TradingViewTicker';
 import QuickTradePanel from '@/components/QuickTradePanel';
 import RecentTradesSection from '@/components/RecentTradesSection';
+import RecentTradesWidget from '@/components/RecentTradesWidget';
 
 
 const CoinsPage = async ({ searchParams }: NextPageProps) => {
@@ -141,6 +142,7 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
         </section>
 
         <RecentTradesSection />
+        <RecentTradesWidget />
       </div>
     </main>
   );
