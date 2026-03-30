@@ -37,9 +37,9 @@ const DataTable = <T,>({
           ))}
         </TableRow>
       </TableHeader>
-      
+
       <TableBody>
-        {data.map((row, rowIndex) => (
+        {(data ?? []).map((row, rowIndex) => (
           <TableRow
             key={rowKey(row, rowIndex)}
             className={cn(

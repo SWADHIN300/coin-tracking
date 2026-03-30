@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import DataTable from '@/components/DataTable';
- import { TrendingCoinsFallback } from './fallback';
+import { TrendingCoinsFallback } from './fallback';
 
 const TrendingCoins = async () => {
   let trendingCoins;
@@ -15,6 +15,9 @@ const TrendingCoins = async () => {
     console.error('Error fetching trending coins:', error);
     return <TrendingCoinsFallback />;
   }
+
+  // fetcher returns null on rate-limit (429) — show fallback instead of crashing
+  if (!trendingCoins?.coins) return <TrendingCoinsFallback />;
 
   const columns: DataTableColumn<TrendingCoin>[] = [
     {
@@ -64,7 +67,7 @@ const TrendingCoins = async () => {
       <h4>Trending Coins</h4>
 
       <DataTable
-        data={trendingCoins.coins.slice(0, 6) || []}
+        data={trendingCoins.coins.slice(0, 6)}
         columns={columns}
         rowKey={(coin) => coin.item.id}
         tableClassName="trending-coins-table"

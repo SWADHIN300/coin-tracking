@@ -4,6 +4,20 @@ import { useEffect, useRef, useState } from 'react';
 
 const WS_BASE = `${process.env.NEXT_PUBLIC_COINGECKO_WEBSOCKET_URL}?x_cg_pro_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`;
 
+const toNumber = (value: number | string | undefined) => {
+  const parsed = typeof value === 'string' ? Number(value) : value;
+  return Number.isFinite(parsed) ? Number(parsed) : 0;
+};
+
+const toPoolAddress = (poolId: string) => {
+  if (!poolId) return null;
+
+  const separatorIndex = poolId.indexOf('_');
+  if (separatorIndex === -1) return poolId;
+
+  return `${poolId.slice(0, separatorIndex)}:${poolId.slice(separatorIndex + 1)}`;
+};
+
 export const useCoinGeckoWebSocket = ({
   coinId,
   poolId,
@@ -26,47 +40,51 @@ export const useCoinGeckoWebSocket = ({
 
     const handleMessage = (event: MessageEvent) => {
       const msg: WebSocketMessage = JSON.parse(event.data);
+      const channelCode = msg.ch ?? msg.c;
 
       if (msg.type === 'ping') {
         send({ type: 'pong' });
         return;
       }
       if (msg.type === 'confirm_subscription') {
-        const { channel } = JSON.parse(msg?.identifier ?? '');
+        const identifier = msg.identifier ? JSON.parse(msg.identifier) : null;
+        const channel = identifier?.channel;
 
-        subscribed.current.add(channel);
+        if (channel) {
+          subscribed.current.add(channel);
+        }
       }
-      if (msg.c === 'C1') {
+      if (channelCode === 'C1') {
         setPrice({
-          usd: msg.p ?? 0,
+          usd: toNumber(msg.p),
           coin: msg.i,
-          price: msg.p,
-          change24h: msg.pp,
-          marketCap: msg.m,
-          volume24h: msg.v,
-          timestamp: msg.t,
+          price: toNumber(msg.p),
+          change24h: toNumber(msg.pp),
+          marketCap: toNumber(msg.m),
+          volume24h: toNumber(msg.v),
+          timestamp: toNumber(msg.t),
         });
       }
-      if (msg.c === 'G2') {
+      if (channelCode === 'G2') {
         const newTrade: Trade = {
-          price: msg.pu,
-          value: msg.vo,
-          timestamp: msg.t ?? 0,
+          price: toNumber(msg.pu),
+          value: toNumber(msg.vo),
+          timestamp: toNumber(msg.t),
           type: msg.ty,
-          amount: msg.to,
+          amount: toNumber(msg.to),
         };
 
         setTrades((prev) => [newTrade, ...prev].slice(0, 7));
       }
-      if (msg.ch === 'G3') {
-        const timestamp = msg.t ?? 0;
+      if (channelCode === 'G3') {
+        const timestamp = toNumber(msg.t);
 
         const candle: OHLCData = [
           timestamp,
-          Number(msg.o ?? 0),
-          Number(msg.h ?? 0),
-          Number(msg.l ?? 0),
-          Number(msg.c ?? 0),
+          toNumber(msg.o),
+          toNumber(msg.h),
+          toNumber(msg.l),
+          toNumber(msg.c),
         ];
 
         setOhlcv(candle);
@@ -127,10 +145,10 @@ export const useCoinGeckoWebSocket = ({
 
       subscribe('CGSimplePrice', { coin_id: [coinId], action: 'set_tokens' });
 
-      const poolAddress = poolId.replace('_', ':'); 
+      const poolAddress = toPoolAddress(poolId);
 
-    if (poolAddress) {
-       subscribe('OnchainTrade', {
+      if (poolAddress) {
+        subscribe('OnchainTrade', {
           'network_id:pool_addresses': [poolAddress],
           action: 'set_pools',
         });
