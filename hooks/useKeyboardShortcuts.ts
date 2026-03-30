@@ -56,8 +56,10 @@ export const useGlobalKeyboardShortcuts = () => {
             ctrl: true,
             action: () => {
                 // Trigger search modal - would need to be implemented separately
-                const searchButton = document.querySelector('[data-search-trigger]') as HTMLElement;
-                searchButton?.click();
+                if (typeof document !== 'undefined') {
+                    const searchButton = document.querySelector('[data-search-trigger]') as HTMLElement;
+                    searchButton?.click();
+                }
             },
             description: 'Open Search',
         },
@@ -66,7 +68,6 @@ export const useGlobalKeyboardShortcuts = () => {
             shift: true,
             action: () => {
                 // Show keyboard shortcuts modal
-                console.log('Show shortcuts help');
             },
             description: 'Show Keyboard Shortcuts',
         },

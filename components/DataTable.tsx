@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
-const DataTable = <T,>({
+function DataTable<T>({
   columns,
   data,
   rowKey,
@@ -18,7 +18,7 @@ const DataTable = <T,>({
   headerCellClassName,
   bodyRowClassName,
   bodyCellClassName,
-}: DataTableProps<T>) => {
+}: DataTableProps<T>) {
   return (
     <Table className={cn('custom-scrollbar', tableClassName)}>
       <TableHeader className={headerClassName}>
@@ -39,22 +39,6 @@ const DataTable = <T,>({
       </TableHeader>
 
       <TableBody>
-        {(data ?? []).map((row, rowIndex) => (
-          <TableRow
-            key={rowKey(row, rowIndex)}
-            className={cn(
-              'overflow-hidden rounded-lg border-b border-purple-100/5 hover:bg-dark-400/30! relative',
-              bodyRowClassName,
-            )}
-          >
-            {columns.map((column, columnIndex) => (
-              <TableCell
-                key={columnIndex}
-                className={cn('py-4 first:pl-5 last:pr-5', bodyCellClassName, column.cellClassName)}
-              >
-                {column.cell(row, rowIndex)}
-              </TableCell>
-            ))}
         {data && data.length > 0 ? (
           data.map((row, rowIndex) => (
             <TableRow
@@ -84,6 +68,6 @@ const DataTable = <T,>({
       </TableBody>
     </Table>
   );
-};
+}
 
 export default DataTable;
