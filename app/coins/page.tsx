@@ -6,6 +6,10 @@ import Link from 'next/link';
 import { cn, formatPercentage, formatCurrency } from '@/lib/utils';
 import DataTable from '@/components/DataTable';
 import CoinsPagination from '@/components/CoinPagination';
+import TradingViewChart from '@/components/TradingViewChart';
+import TradingViewTicker from '@/components/TradingViewTicker';
+import QuickTradePanel from '@/components/QuickTradePanel';
+import RecentTradesSection from '@/components/RecentTradesSection';
 import RecentTradesWidget from '@/components/RecentTradesWidget';
 
 
@@ -62,7 +66,6 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
       cellClassName: 'change-cell',
       cell: (coin) => {
         const isTrendingUp = coin.price_change_percentage_24h > 0;
-
         return (
           <span
             className={cn('change-value', {
@@ -95,11 +98,13 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
   }
 
   const hasMorePages = coinsData.length === perPage;
-
   const estimatedTotalPages = currentPage >= 100 ? Math.ceil(currentPage / 100) * 100 + 100 : 100;
 
   return (
     <main id="coins-page">
+      {/* ── Live Ticker Tape ── */}
+      <TradingViewTicker />
+
       <div className="content">
         <h4>All Coins</h4>
 
@@ -116,6 +121,27 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
           hasMorePages={hasMorePages}
         />
 
+        {/* ── Trading Section: Chart + Quick Trade ── */}
+        <section className="trading-section">
+          <div className="trading-section__header">
+            <h4>Live Trading</h4>
+            <p className="trading-section__subtitle">Real-time charts powered by TradingView</p>
+          </div>
+
+          <div className="trading-section__grid">
+            {/* Live Chart */}
+            <div className="trading-section__chart">
+              <TradingViewChart symbol="BINANCE:BTCUSDT" theme="dark" height={520} />
+            </div>
+
+            {/* Quick Trade Panel */}
+            <div className="trading-section__trade">
+              <QuickTradePanel />
+            </div>
+          </div>
+        </section>
+
+        <RecentTradesSection />
         <RecentTradesWidget />
       </div>
     </main>

@@ -6,6 +6,8 @@ import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 
 const Categories = async () => {
+
+  const categories = await fetcher<Category[]>('/coins/categories');
   let categories;
 
   try {
@@ -76,6 +78,7 @@ const Categories = async () => {
       <h4>Top Categories</h4>
 
       <DataTable columns={columns}
+        data={(categories ?? []).slice(0, 10)}
         data={categories?.slice(0, 10) ?? []}
         rowKey={(_, index) => index}
         tableClassName='mt-3' />

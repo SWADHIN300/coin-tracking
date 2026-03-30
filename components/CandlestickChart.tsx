@@ -32,18 +32,6 @@ const CandlestickChart = ({
   const [ohlcData, setOhlcData] = useState<OHLCData[]>(data ?? []);
   const [isPending, startTransition] = useTransition();
 
-  // Sync data prop with state when it changes (e.g., navigating to a new coin)
-  useEffect(() => {
-    if (data) {
-      setOhlcData(data);
-    }
-  }, [data]);
-
-  // Reset period to initial when coinId changes (navigating to a new coin)
-  useEffect(() => {
-    setPeriod(initialPeriod);
-  }, [coinId, initialPeriod]);
-
   const fetchOHLCData = async (selectedPeriod: Period) => {
     try {
       const { days } = PERIOD_CONFIG[selectedPeriod];

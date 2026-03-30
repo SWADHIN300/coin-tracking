@@ -17,6 +17,9 @@ const TrendingCoins = async () => {
     return <TrendingCoinsFallback />;
   }
 
+  // fetcher returns null on rate-limit (429) — show fallback instead of crashing
+  if (!trendingCoins?.coins) return <TrendingCoinsFallback />;
+
   const columns: DataTableColumn<TrendingCoin>[] = [
     {
       header: 'Name',
@@ -68,6 +71,7 @@ const TrendingCoins = async () => {
       <h4>Trending Coins</h4>
 
       <DataTable
+        data={trendingCoins.coins.slice(0, 6)}
         data={trendingCoins?.coins?.slice(0, 6) ?? []}
         columns={columns}
         rowKey={(coin) => coin.item.id}

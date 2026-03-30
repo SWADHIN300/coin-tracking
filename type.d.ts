@@ -157,17 +157,17 @@ interface WebSocketMessage {
   c?: string;
   ch?: string;
   i?: string;
-  p?: number;
-  pp?: number;
-  pu?: number;
-  m?: number;
-  v?: number;
-  vo?: number;
-  o?: number;
-  h?: number;
-  l?: number;
-  t?: number;
-  to?: number;
+  p?: number | string;
+  pp?: number | string;
+  pu?: number | string;
+  m?: number | string;
+  v?: number | string;
+  vo?: number | string;
+  o?: number | string;
+  h?: number | string;
+  l?: number | string;
+  t?: number | string;
+  to?: number | string;
   ty?: string;
   channel?: string;
   identifier?: string;
@@ -224,8 +224,9 @@ interface CoinDetailsData {
 
 interface LiveDataProps {
   coinId: string;
-  poolId: string;
+  tvSymbol: string;
   coin: CoinDetailsData;
+  section?: 'full' | 'header' | 'trades';
   coinOHLCData?: OHLCData[];
   children?: React.ReactNode;
 }

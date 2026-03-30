@@ -4,8 +4,11 @@ import qs from 'query-string';
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
 
-const BASE_URL = process.env.COINGECKO_BASE_URL!;
 const API_KEY = process.env.COINGECKO_API_KEY;
+const BASE_URL = process.env.COINGECKO_BASE_URL || 'https://api.coingecko.com/api/v3';
+const API_KEY_HEADER = BASE_URL.includes('pro-api.coingecko.com')
+  ? 'x-cg-pro-api-key'
+  : 'x-cg-demo-api-key';
 
 // Prevent duplicate in-flight requests
 const pendingRequests = new Map<string, Promise<unknown>>();
@@ -64,8 +67,8 @@ export async function fetcher<T>(
         accept: 'application/json',
       };
 
-      if (API_KEY && BASE_URL.includes('pro-api.coingecko.com')) {
-        headers['x-cg-pro-api-key'] = API_KEY;
+      if (API_KEY) {
+        headers[API_KEY_HEADER] = API_KEY;
       }
 
       const response = await fetch(url, {
