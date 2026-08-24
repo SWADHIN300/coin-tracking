@@ -15,10 +15,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SearchModal } from './SearchModal';
 import ThemeToggle from './ThemeToggle';
-import { TrendingUp } from 'lucide-react';
+import { LogOut, TrendingUp, UserCircle2 } from 'lucide-react';
 import { useTradeDrawer } from './TradeDrawerProvider';
+import { signOut } from 'next-auth/react';
 
-const Header = () => {
+type HeaderProps = {
+    sessionUser?: {
+        id: string;
+        name?: string | null;
+        email?: string | null;
+    } | null;
+};
+
+const Header = ({ sessionUser = null }: HeaderProps) => {
     const pathname = usePathname();
     const { openBuyDrawer } = useTradeDrawer();
 
@@ -51,7 +60,17 @@ const Header = () => {
                         All Coins
                     </Link>
 
+                    <Link
+                        href="/portfolio"
+                        className={cn('nav-link', {
+                            'is-active': pathname === '/portfolio',
+                        })}
+                    >
+                        Portfolio
+                    </Link>
+
                     <button
+                        type="button"
                         className="buy-btn"
                         onClick={openBuyDrawer}
                         aria-label="Open Buy Panel"
@@ -59,6 +78,39 @@ const Header = () => {
                         <TrendingUp size={15} />
                         Buy
                     </button>
+
+                    {sessionUser ? (
+                        <>
+                            <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-purple-100">
+                                <UserCircle2 size={14} className="text-green-400" />
+                                <span className="max-w-32 truncate">
+                                    {sessionUser.name || sessionUser.email || 'Trader'}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                className="hero-btn-secondary !px-4 !py-2 !text-sm"
+                                onClick={() => signOut({ callbackUrl: '/' })}
+                            >
+                                <LogOut size={14} />
+                                Sign Out
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href="/sign-in"
+                                className={cn('nav-link max-md:hidden', {
+                                    'is-active': pathname === '/sign-in',
+                                })}
+                            >
+                                Sign In
+                            </Link>
+                            <Link href="/sign-up" className="hero-btn-secondary !px-4 !py-2 !text-sm">
+                                Sign Up
+                            </Link>
+                        </>
+                    )}
 
                     <ThemeToggle />
                 </nav>
