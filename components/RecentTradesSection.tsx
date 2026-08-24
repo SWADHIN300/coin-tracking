@@ -14,28 +14,49 @@ interface RecentTrade {
     timestamp: number;
 }
 
-const generateMockTrades = () => {
+const SEED_BASE_PRICE = 45120;
+const SEED_BASE_TIMESTAMP = Date.UTC(2026, 2, 30, 8, 0, 0);
+
+const generateSeedTrades = () => {
     const mockTrades: RecentTrade[] = [];
-    const basePrice = 45000 + Math.random() * 1000;
 
     for (let i = 0; i < 20; i++) {
-        const price = basePrice + (Math.random() - 0.5) * 500;
-        const amount = Math.random() * 0.5;
+        const price = SEED_BASE_PRICE + ((i % 5) - 2) * 85 + i * 11;
+        const amount = 0.018 + ((i * 17) % 21) / 100;
         mockTrades.push({
-            id: `trade-${Date.now()}-${i}`,
+            id: `seed-trade-${i}`,
             price,
             amount,
             total: price * amount,
-            type: Math.random() > 0.5 ? 'buy' : 'sell',
-            timestamp: Date.now() - i * 10000,
+            type: i % 3 === 0 ? 'sell' : 'buy',
+            timestamp: SEED_BASE_TIMESTAMP - i * 15 * 60 * 1000,
         });
     }
 
     return mockTrades;
 };
 
+let liveTradeCounter = 0;
+
+const generateLiveTrade = (anchorPrice: number) => {
+    const price = Math.max(1000, anchorPrice + (Math.random() - 0.5) * 240);
+    const amount = 0.01 + Math.random() * 0.45;
+    const timestamp = Date.now();
+
+    liveTradeCounter += 1;
+
+    return {
+        id: `live-trade-${timestamp}-${liveTradeCounter}`,
+        price,
+        amount,
+        total: price * amount,
+        type: Math.random() > 0.5 ? 'buy' : 'sell',
+        timestamp,
+    } satisfies RecentTrade;
+};
+
 const RecentTradesWidget = () => {
-    const [trades, setTrades] = useState<RecentTrade[]>(() => generateMockTrades());
+    const [trades, setTrades] = useState<RecentTrade[]>(() => generateSeedTrades());
     const [isPaused, setIsPaused] = useState(false);
     const [filter, setFilter] = useState<'all' | 'buy' | 'sell'>('all');
     const [sortBy, setSortBy] = useState<'time' | 'price' | 'amount'>('time');
@@ -45,7 +66,8 @@ const RecentTradesWidget = () => {
 
         const interval = setInterval(() => {
             setTrades(prev => {
-                const newTrade = generateMockTrades()[0];
+                const anchorPrice = prev[0]?.price ?? SEED_BASE_PRICE;
+                const newTrade = generateLiveTrade(anchorPrice);
                 return [newTrade, ...prev.slice(0, 19)];
             });
         }, 3000);

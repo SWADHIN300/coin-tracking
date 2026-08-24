@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import { getServerSession } from 'next-auth';
 import { formatCurrency } from '@/lib/utils';
 import { fetcher } from '@/lib/coingecko.actions';
 import LiveDataWrapper from '@/components/LiveDataWrapper';
@@ -8,6 +9,10 @@ import LiveDataSkeleton from '@/components/LiveDataSkeleton';
 import TradingViewChart from '@/components/TradingViewChart';
 import Converter from '@/components/Converter';
 import { toTradingViewSymbol } from '@/lib/tradingSymbols';
+import CoinLiquidityPanel from '@/components/CoinLiquidityPanel';
+import { authOptions } from '@/auth';
+import prisma from '@/lib/prisma';
+import { authSetupComplete } from '@/lib/site-config';
 
 type NextPageProps = {
   params: Promise<{ id: string }>;
@@ -57,6 +62,64 @@ async function CoinTradesSection({ coinId }: { coinId: string }) {
       tvSymbol={toTradingViewSymbol(coinId)}
       coin={coinData}
       section="trades"
+    />
+  );
+}
+
+async function CoinLiquiditySection({ coinId }: { coinId: string }) {
+  const coinData = await fetcher<CoinDetailsData>(`/coins/${coinId}`, {
+    dex_pair_format: 'contract_address',
+  });
+
+  if (!coinData) {
+    return null;
+  }
+
+  let isAuthenticated = false;
+  let userOrders: {
+    id: string;
+    side: 'BID' | 'DEMAND';
+    amountUsd: number;
+    targetPriceUsd: number | null;
+    createdAt: string;
+  }[] = [];
+
+  if (authSetupComplete) {
+    const session = await getServerSession(authOptions);
+
+    if (session?.user?.id) {
+      isAuthenticated = true;
+
+      const orders = await prisma.liquidityOrder.findMany({
+        where: {
+          userId: session.user.id,
+          coinId,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      });
+
+      userOrders = orders.map((order) => ({
+        id: order.id,
+        side: order.side,
+        amountUsd: order.amountUsd,
+        targetPriceUsd: order.targetPriceUsd,
+        createdAt: order.createdAt.toISOString(),
+      }));
+    }
+  }
+
+  return (
+    <CoinLiquidityPanel
+      coinId={coinId}
+      coinName={coinData.name}
+      coinSymbol={coinData.symbol}
+      currentPriceUsd={coinData.market_data.current_price.usd}
+      volumeUsd={coinData.market_data.total_volume.usd}
+      marketCapUsd={coinData.market_data.market_cap.usd}
+      setupComplete={authSetupComplete}
+      isAuthenticated={isAuthenticated}
+      userOrders={userOrders}
     />
   );
 }
@@ -164,6 +227,12 @@ const Page = async ({ params }: NextPageProps) => {
       <section className="full-width">
         <Suspense fallback={<LiveDataSkeleton />}>
           <CoinTradesSection coinId={id} />
+        </Suspense>
+      </section>
+
+      <section className="full-width">
+        <Suspense fallback={<LiveDataSkeleton />}>
+          <CoinLiquiditySection coinId={id} />
         </Suspense>
       </section>
     </main>

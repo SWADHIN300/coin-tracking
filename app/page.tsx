@@ -8,36 +8,48 @@ import MarketOverviewBanner from '@/components/MarketOverviewBanner';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import ComparisonTool from '@/components/ComparisonTool';
 import NewsFeed from '@/components/NewsFeed';
+import HomeFooter from '@/components/home/HomeFooter';
 import { Suspense } from 'react';
 
 const page = async () => {
   return (
-    <main>
+    <main id="home-page">
+      {/* Market Overview Banner */}
+      <Suspense fallback={<div className="h-20 shimmer bg-gray-700/20 rounded-xl"></div>}>
+        <MarketOverviewBanner />
+      </Suspense>
+
+      {/* Hero Section */}
       <HeroSection />
       <div className='main-container'>
         <NewsSection />
         <section className='home-grid'>
-          <Suspense fallback={<CoinOverviewFallback />}> 
+          <Suspense fallback={<CoinOverviewFallback />}>
             <CoinOverview />
           </Suspense>
-          <Suspense fallback={<TrendingCoinsFallback />}> 
+          <Suspense fallback={<TrendingCoinsFallback />}>
             <TrendingCoins />
           </Suspense>
         </section>
-        <section className='w-full mt-7 space-y-4'>
-          <Suspense fallback={<CategoriesFallback />}> 
-            <Categories />
-          </Suspense>
-        </section>
-        <Suspense fallback={<div className="h-20 shimmer bg-gray-700/20 rounded-xl"></div>}> 
-          <MarketOverviewBanner />
-        </Suspense>
+
+        {/* Comparison Tool */}
         <section className="w-full mb-6">
           <ComparisonTool />
         </section>
+
+        {/* News Feed */}
         <NewsFeed />
-        <FloatingActionButton />
+
+        <section className='w-full mt-7 space-y-4'>
+          <Suspense fallback={<CategoriesFallback />}>
+            <Categories />
+          </Suspense>
+        </section>
       </div>
+
+      <FloatingActionButton />
+
+      <HomeFooter />
     </main>
   );
 };
