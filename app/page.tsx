@@ -11,9 +11,7 @@ import NewsFeed from '@/components/NewsFeed';
 import HomeFooter from '@/components/home/HomeFooter';
 import { Suspense } from 'react';
 
-
 const page = async () => {
-
   return (
     <main id="home-page">
       {/* Market Overview Banner */}
@@ -23,13 +21,8 @@ const page = async () => {
 
       {/* Hero Section */}
       <HeroSection />
-
-      {/* Main content */}
       <div className='main-container'>
-        {/* News Section */}
         <NewsSection />
-
-        {/* Coin Overview + Trending Grid */}
         <section className='home-grid'>
           <Suspense fallback={<CoinOverviewFallback />}>
             <CoinOverview />
@@ -58,8 +51,7 @@ const page = async () => {
 
       <HomeFooter />
     </main>
-  )
-}
+  );
+};
 
-export default page
-
+export default page;

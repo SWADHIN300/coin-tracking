@@ -2,11 +2,22 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-const WS_BASE = `${process.env.NEXT_PUBLIC_COINGECKO_WEBSOCKET_URL}?x_cg_pro_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`;
-
 const toNumber = (value: number | string | undefined) => {
   const parsed = typeof value === 'string' ? Number(value) : value;
   return Number.isFinite(parsed) ? Number(parsed) : 0;
+};
+
+const getWSUrl = () => {
+  if (typeof window === 'undefined') return '';
+  const url = new URL(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//ws.coingecko.com/v1`);
+  // Client-side env vars only
+  if (process.env.NEXT_PUBLIC_COINGECKO_WEBSOCKET_URL) {
+    Object.assign(url, new URL(process.env.NEXT_PUBLIC_COINGECKO_WEBSOCKET_URL));
+  }
+  if (process.env.NEXT_PUBLIC_COINGECKO_API_KEY) {
+    url.searchParams.set('x_cg_pro_api_key', process.env.NEXT_PUBLIC_COINGECKO_API_KEY);
+  }
+  return url.toString();
 };
 
 const toPoolAddress = (poolId: string) => {
@@ -32,8 +43,13 @@ export const useCoinGeckoWebSocket = ({
 
   const [isWsReady, setIsWsReady] = useState(false);
 
-  useEffect(() => {
-    const ws = new WebSocket(WS_BASE);
+useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const wsUrl = getWSUrl();
+    if (!wsUrl) return;
+    
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     const send = (payload: Record<string, unknown>) => ws.send(JSON.stringify(payload));
@@ -101,7 +117,9 @@ export const useCoinGeckoWebSocket = ({
       setIsWsReady(false);
     };
 
-    return () => ws.close();
+    return () => {
+      ws.close();
+    };
   }, []);
 
   useEffect(() => {

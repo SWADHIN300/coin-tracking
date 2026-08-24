@@ -6,7 +6,7 @@ const TradingViewTicker = memo(() => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (typeof document === 'undefined' || !containerRef.current) return;
         containerRef.current.innerHTML = '';
 
         const script = document.createElement('script');

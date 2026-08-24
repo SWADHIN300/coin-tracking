@@ -141,7 +141,6 @@ const CoinsPage = async ({ searchParams }: NextPageProps) => {
           </div>
         </section>
 
-        <RecentTradesSection />
         <RecentTradesWidget />
       </div>
     </main>
